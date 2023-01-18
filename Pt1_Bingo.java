@@ -16,7 +16,7 @@ public class Pt1_Bingo {
     //Declaració i inicialització de constants globals\\
     public static final Scanner SCN = new Scanner(System.in);
     public static final Random RND = new Random();
-    public static final int MAX_TIPUS_JOC = 75;
+    public static final int MAX_TIPUS_JOC = 27;//75; //Minim pot ser 27, que son els espais disponibles sense repetició d'un cartro.
     public static final int MIN_TIPUS_JOC = 1;
     public static final String BOMBO = "@";
     public static final int MARCAT = -1;
@@ -30,13 +30,12 @@ public class Pt1_Bingo {
         //Declaració i inicialització de variables\\
         boolean fiJoc, bingo, linia, seguent;
         fiJoc = bingo = linia = false;
-        //seguent = true;
-        seguent = false;
-        int contadorTirades, opcioJugador;
+        seguent = true;
+        //seguent = false;
+        int contadorTirades, opcioJugador, ultimaExtraccio;
         contadorTirades = 0;
-        //opcioJugador = 1;
 
-        int[] extraccions = new int[MAX_TIPUS_JOC];
+        int[] registreExtraccions = new int[MAX_TIPUS_JOC];
 
         System.out.println("Benvingut a la tarda de Bingo!");
 
@@ -57,16 +56,21 @@ public class Pt1_Bingo {
 
             //Dinàmica d'extraccions\\
             while (!bingo && contadorTirades < MAX_TIPUS_JOC && seguent) {
-
-                //extraccio > mostra extracció vàlida
+                ultimaExtraccio = novaExtracció(registreExtraccions);
+                contadorTirades++;
                 //marcar cartroMarcat si escau
-                //seguent = continuarTirant("Següent número (s/n)?: ");
+                comprovarCartrons(cartrons, ultimaExtraccio);
+                seguent = continuar("Següent número (s/n)?: ");
                 //mostrar post extracció \\
+                for (int i = 0; i < cartrons.length; i++) {
+                    System.out.println("Cartro " + (i + 1));
+                    mostrarCartro(cartrons[i].cartroMarcat);
+                }
                 //mostrarCartroMarcat(cartrons, BOMBO, MARCAT);
             }
 
             fiJoc = repetirJoc("Vols tornar a jugar?: ");
-            //seguent = true;
+            seguent = true;
         } while (!fiJoc);
     }
 
@@ -90,7 +94,7 @@ public class Pt1_Bingo {
                 }
             }
         } while (!validNum);
-        
+
         //Format de la sortida per evitar out of bounds als mètodes on s'utilitza aquesta dada\\
         if (nombreRandom == registre.length) {
             return nombreRandom - 1;
@@ -148,7 +152,7 @@ public class Pt1_Bingo {
                         System.out.printf("%2s|", BOMBO);
                         break;
                     case -1:
-                        System.out.printf("%2s", MARCAT_STRING);
+                        System.out.printf("%2s|", MARCAT_STRING);
                         break;
                     default:
                         System.out.printf("%2d|", cartro[i][j]);
@@ -159,19 +163,39 @@ public class Pt1_Bingo {
         System.out.println();
     }
 
-    //OMPLIR AQUEST METODE I LA VALIDACIO BINGO I LINIA
-    public static void novaExtracció() {
-        
+    public static int novaExtracció(int[] registreExtraccions) {
+        int nouNumero;
+        nouNumero = nombreNoRepetit(registreExtraccions, MAX_TIPUS_JOC, MIN_TIPUS_JOC);
+
+        System.out.println("Nou número: " + nouNumero);
+
+        return nouNumero;
+    }
+
+    public static void comprovarCartrons(Cartro[] cartrons, int ultimaExtraccio) {
+        int[] resultatCerca = new int[2];
+        for (int i = 0; i < cartrons.length; i++) {
+            boolean trobat = false;
+            Tools.cercaNumBi(cartrons[i].cartroMarcat, ultimaExtraccio, resultatCerca);
+            trobat = (resultatCerca[0] != -1 && resultatCerca[1] != -1);
+
+            if (trobat) {
+                System.out.printf("Aquest número el tenies al Cartro-%d, el marco com -1\n", i + 1);
+                cartrons[i].cartroMarcat[resultatCerca[0]][resultatCerca[1]] = -1;
+            }
+            //trobat = false;
+        }
     }
 
     /**
      * Mètode per controlar si continuem fent una acció o no.
+     *
      * @param missatge rep el missatge de pregunta adient.
      * @return true o false segons la resposta de l'usuari.
      */
     public static boolean continuar(String missatge) {
         String continuar;
-        System.out.println(missatge);
+        System.out.print(missatge);
         continuar = SCN.next();
         if (continuar.equalsIgnoreCase("S")) {
             return true;
