@@ -13,38 +13,50 @@ import java.util.Scanner;
  */
 public class Pt1_Bingo {
 
-    //Constants globals
-    public static final Scanner scn = new Scanner(System.in);
-    public static final Random rnd = new Random();
+    //Declaració i inicialització de constants globals\\
+    public static final Scanner SCN = new Scanner(System.in);
+    public static final Random RND = new Random();
+    public static final int MAX_TIPUS_JOC = 75;
+    public static final int MIN_TIPUS_JOC = 1;
+    public static final String BOMBO = "@";
+    public static final int MARCAT = -1;
+    public static final String MARCAT_STRING = "X";
+    public static final int MAX_BOMBO = 4;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        //Declaració de variables
-        final int TIPUS_JOC = 75;
-        final String BOMBO = "@";
-        final int MARCAT = -1;
-        final int MAX_BOMBO = 4;
+        //Declaració i inicialització de variables\\
         boolean fiJoc, bingo, linia, seguent;
         fiJoc = bingo = linia = false;
-        seguent = true;
+        //seguent = true;
+        seguent = false;
         int contadorTirades, opcioJugador;
         contadorTirades = 0;
-        opcioJugador = 1;
+        //opcioJugador = 1;
 
-        int []extraccions = new int[TIPUS_JOC];
-        
+        int[] extraccions = new int[MAX_TIPUS_JOC];
+
+        System.out.println("Benvingut a la tarda de Bingo!");
+
+        //Bucle principal del joc\\
+        //***********************\\
         do {
-            System.out.print("Benvingut a la tarda de Bingo!\n"
-                    + "Quants cartrons vols jugar? ");
+            //Primera part de preparació dels elements necessaris per jugar\\
+            System.out.print("Quants cartrons vols jugar? ");
             opcioJugador = Tools.validIntPositiu();
+            System.out.println();
 
             Cartro[] cartrons = new Cartro[opcioJugador];
-            crearCartrons(cartrons, TIPUS_JOC);
-            mostrarCartro(cartrons, BOMBO);
+            crearCartrons(cartrons);
+            for (int i = 0; i < cartrons.length; i++) {
+                System.out.println("Cartro " + (i + 1));
+                mostrarCartro(cartrons[i].cartro);
+            }
 
-            while (!bingo && contadorTirades < TIPUS_JOC /*&& seguent*/) {
+            //Dinàmica d'extraccions\\
+            while (!bingo && contadorTirades < MAX_TIPUS_JOC && seguent) {
 
                 //extraccio > mostra extracció vàlida
                 //marcar cartroMarcat si escau
@@ -53,111 +65,114 @@ public class Pt1_Bingo {
                 //mostrarCartroMarcat(cartrons, BOMBO, MARCAT);
             }
 
-            fiJoc = repetirJoc();
+            fiJoc = repetirJoc("Vols tornar a jugar?: ");
             //seguent = true;
         } while (!fiJoc);
     }
 
-    // ******METODES****** //
-    public static void crearCartrons(Cartro[] cartrons, int tipusJoc) {
+    // ******METODES****** \\
+    //*********************\\
+    public static int nombreNoRepetit(int[] registre, int upperBound, int lowerBound) {
+        int nombreRandom;
+        boolean validNum = false;
+
+        do {
+            nombreRandom = RND.nextInt((upperBound - lowerBound + 1)) + lowerBound;
+            if (nombreRandom != 0) {
+                if (registre[nombreRandom - 1] == 0) {
+                    validNum = true;
+                    registre[nombreRandom - 1] = 1;
+                }
+            } else {
+                if (registre[nombreRandom] == 0) {
+                    validNum = true;
+                    registre[nombreRandom] = 1;
+                }
+            }
+        } while (!validNum);
+        
+        //Format de la sortida per evitar out of bounds als mètodes on s'utilitza aquesta dada\\
+        if (nombreRandom == registre.length) {
+            return nombreRandom - 1;
+        } else {
+            return nombreRandom;
+        }
+
+    }
+
+    public static void crearCartrons(Cartro[] cartrons) {
         for (int i = 0; i < cartrons.length; i++) {
             cartrons[i] = new Cartro();
             cartrons[i].cartro = new int[3][9];
             cartrons[i].cartroMarcat = new int[3][9];
-            omplirCartrons(cartrons[i], tipusJoc);
+            omplirCartrons(cartrons[i]);
         }
     }
 
-    public static void omplirCartrons(Cartro cartro, int tipusJoc) {
-        int numero = 0;
-        int[] numeros = new int[tipusJoc];
-        boolean colocat = false;
+    public static void omplirCartrons(Cartro cartro) {
+        int nouNumero = 0;
+        int[] numeros = new int[MAX_TIPUS_JOC];
+
         for (int i = 0; i < cartro.cartro.length; i++) {
             for (int j = 0; j < cartro.cartro[i].length; j++) {
-                do {
-                    numero = rnd.nextInt(tipusJoc) + 1;
-                    if (numeros[numero - 1] == 0) {
-                        cartro.cartro[i][j] = numero;
-                        cartro.cartroMarcat[i][j] = numero;
-                        numeros[numero - 1] = 1;
-                        colocat = true;
-                    }
-                } while (!colocat);
-                colocat = false;
+                nouNumero = nombreNoRepetit(numeros, MAX_TIPUS_JOC, MIN_TIPUS_JOC);
+                cartro.cartro[i][j] = nouNumero;
+                cartro.cartroMarcat[i][j] = nouNumero;
             }
         }
         posarSimbol(cartro.cartro, cartro.cartroMarcat);
-
     }
 
     public static void posarSimbol(int[][] cartro, int[][] cartroCopia) {
-        int random, contador;
-        random = contador = 0;
+        int nouIndex, contador;
+        nouIndex = contador = 0;
 
         for (int i = 0; i < cartro.length; i++) {
             int[] indexZeros = new int[cartro[i].length];
             do {
-                random = rnd.nextInt(cartro[i].length); //+ 1;
-                if (indexZeros[random] == 0) {
-                    indexZeros[random] = 1;
-                    cartro[i][random] = 0;
-                    cartroCopia[i][random] = 0;
-                    contador++;
-                }
+                nouIndex = nombreNoRepetit(indexZeros, cartro[i].length, 0);
+                cartro[i][nouIndex] = 0;
+                cartroCopia[i][nouIndex] = 0;
+                contador++;
             } while (contador < 4);
             contador = 0;
         }
     }
 
-    public static void mostrarCartro(Cartro[] cartrons, String simbol) {
-        for (int i = 0; i < cartrons.length; i++) {
-            System.out.println("Cartro " + (i + 1));
-            for (int j = 0; j < cartrons[i].cartro.length; j++) {
-                System.out.print("|");
-                for (int k = 0; k < cartrons[i].cartro[j].length; k++) {
-                    if (cartrons[i].cartro[j][k] == 0) {
-                        System.out.printf("%2s|", simbol);
-                    } else {
-                        System.out.printf("%2d|", cartrons[i].cartro[j][k]);
-                    }
+    public static void mostrarCartro(int[][] cartro) {
+        for (int i = 0; i < cartro.length; i++) {
+            System.out.print("|");
+            for (int j = 0; j < cartro[i].length; j++) {
+                switch (cartro[i][j]) {
+                    case 0:
+                        System.out.printf("%2s|", BOMBO);
+                        break;
+                    case -1:
+                        System.out.printf("%2s", MARCAT_STRING);
+                        break;
+                    default:
+                        System.out.printf("%2d|", cartro[i][j]);
                 }
-                System.out.println();
             }
             System.out.println();
         }
+        System.out.println();
     }
 
-    public static void mostrarCartroMarcat(Cartro[] cartrons, String simbol, int marcat) {
-        for (int i = 0; i < cartrons.length; i++) {
-            System.out.println("Cartro " + (i + 1));
-            for (int j = 0; j < cartrons[i].cartroMarcat.length; j++) {
-                System.out.print("|");
-                for (int k = 0; k < cartrons[i].cartroMarcat[j].length; k++) {
-                    switch (cartrons[i].cartroMarcat[j][k]) {
-                        case 0:
-                            System.out.printf("%2s|", simbol);
-                            break;
-                        case -1:
-                            System.out.printf("%2s", "X");
-                            break;
-                        default:
-                            System.out.printf("%2d|", cartrons[i].cartro[j][k]);
-                    }
-                }
-                System.out.println();
-            }
-            System.out.println();
-        }
-    }
-
+    //OMPLIR AQUEST METODE I LA VALIDACIO BINGO I LINIA
     public static void novaExtracció() {
         
     }
 
-    public static boolean continuarTirant(String missatge) {
+    /**
+     * Mètode per controlar si continuem fent una acció o no.
+     * @param missatge rep el missatge de pregunta adient.
+     * @return true o false segons la resposta de l'usuari.
+     */
+    public static boolean continuar(String missatge) {
         String continuar;
         System.out.println(missatge);
-        continuar = scn.next();
+        continuar = SCN.next();
         if (continuar.equalsIgnoreCase("S")) {
             return true;
         } else {
@@ -165,15 +180,14 @@ public class Pt1_Bingo {
         }
     }
 
-    public static boolean repetirJoc() {
+    public static boolean repetirJoc(String missatge) {
         String novaPartida;
-
-        System.out.print("Vols tornar a jugar?: ");
-        novaPartida = scn.next();
+        System.out.print(missatge);
+        novaPartida = SCN.next();
         if (!novaPartida.equalsIgnoreCase("S")) {
             return true;
         } else {
-            System.out.println("Seguim provant sort!");
+            System.out.println("\nSeguim provant sort!");
             return false;
         }
     }
