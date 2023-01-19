@@ -70,24 +70,32 @@ public class Pt1_Bingo {
                     mostrarCartro(cartrons[i].cartroMarcat);
                 }
 
-                //Validar linia i bingo
+                //Validar linia
                 if (!linia) {
                     //metode
                     linia = validarLinia(cartrons);
                     if (linia) {
-                        System.out.println("Linia!!!");
+                        //System.out.println("Linia!!!"); //Es pot delegar a valid linea o no, per saber quin cartro té la linia
                         seguent = continuar("Següent número (s/n)?: ");
+                    }
+                }
+                //Validar Bingo
+                if (!bingo) { //contadorTirades > 14 && 
+                    bingo = validarBingo(cartrons);
+                    if (bingo) {
+                        System.out.println("Bingo!!");
                     }
                 }
             }
             //mostrar extraccions
             mostrarExtraccions(registreExtraccions);
-            
+
             //Fi de joc o no i resets necessaris\\
             fiJoc = repetirJoc("Vols tornar a jugar?: ");
             seguent = true;
             linia = false;
-            Arrays.fill(registreExtraccions, 0, registreExtraccions.length - 1, RESET_ARRAY);;
+            bingo = false;
+            Arrays.fill(registreExtraccions, 0, registreExtraccions.length, RESET_ARRAY);;
             contadorTirades = 0;
         } while (!fiJoc);
     }
@@ -100,26 +108,13 @@ public class Pt1_Bingo {
 
         do {
             nombreRandom = RND.nextInt((upperBound - lowerBound + 1)) + lowerBound;
-            if (nombreRandom != 0) {
-                if (registre[nombreRandom - 1] == 0) {
-                    validNum = true;
-                    registre[nombreRandom - 1] = 1;
-                }
-            } else {
-                if (registre[nombreRandom] == 0) {
-                    validNum = true;
-                    registre[nombreRandom] = 1;
-                }
+            if (registre[nombreRandom - 1] == 0) {
+                validNum = true;
+                registre[nombreRandom - 1] = 1;
             }
         } while (!validNum);
 
-        //Format de la sortida per evitar out of bounds als mètodes on s'utilitza aquesta dada\\
-        if (nombreRandom == registre.length) {
-            return nombreRandom - 1;
-        } else {
-            return nombreRandom;
-        }
-
+        return nombreRandom - 1;
     }
 
     public static void crearCartrons(Cartro[] cartrons) {
@@ -138,8 +133,8 @@ public class Pt1_Bingo {
         for (int i = 0; i < cartro.cartro.length; i++) {
             for (int j = 0; j < cartro.cartro[i].length; j++) {
                 nouNumero = nombreNoRepetit(numeros, MAX_TIPUS_JOC, MIN_TIPUS_JOC);
-                cartro.cartro[i][j] = nouNumero;
-                cartro.cartroMarcat[i][j] = nouNumero;
+                cartro.cartro[i][j] = nouNumero + 1; //Així mai pot ser 0.
+                cartro.cartroMarcat[i][j] = nouNumero + 1;
             }
         }
         posarSimbol(cartro.cartro, cartro.cartroMarcat);
@@ -152,7 +147,7 @@ public class Pt1_Bingo {
         for (int i = 0; i < cartro.length; i++) {
             int[] indexZeros = new int[cartro[i].length];
             do {
-                nouIndex = nombreNoRepetit(indexZeros, cartro[i].length, 0);
+                nouIndex = nombreNoRepetit(indexZeros, cartro[i].length, 1);
                 cartro[i][nouIndex] = 0;
                 cartroCopia[i][nouIndex] = 0;
                 contador++;
@@ -185,9 +180,9 @@ public class Pt1_Bingo {
         int nouNumero;
         nouNumero = nombreNoRepetit(registreExtraccions, MAX_TIPUS_JOC, MIN_TIPUS_JOC);
 
-        System.out.println("Nou número: " + nouNumero);
+        System.out.println("Nou número: " + (nouNumero + 1));
 
-        return nouNumero;
+        return nouNumero + 1;
     }
 
     public static void mostrarExtraccions(int[] registreExtraccions) {
@@ -222,7 +217,6 @@ public class Pt1_Bingo {
                 System.out.printf("Aquest número el tenies al Cartro-%d, el marco com -1\n", i + 1);
                 cartrons[i].cartroMarcat[resultatCerca[0]][resultatCerca[1]] = -1;
             }
-            //trobat = false;
         }
     }
 
@@ -241,16 +235,47 @@ public class Pt1_Bingo {
                 }
                 if (contador == 5) {
                     linia = true;
+                    System.out.printf("Linia1! Cartro:%d row:%d\n", i + 1, j + 1);
                 } else {
                     contador = 0;
                     k = 0;
                 }
                 j++;
             }
-            i++;
+            if (!linia) { //creo que no cal el if
+                i++;
+            }
         }
 
         return linia;
+    }
+
+    public static boolean validarBingo(Cartro[] cartrons) {
+        boolean bingo;
+        bingo = false;
+        int i, j, contador, contadorLinies;
+        i = contadorLinies = 0;
+        while (contadorLinies < 3 && i < cartrons.length) {
+            j = contador = 0;
+            while (contadorLinies < 3 && j < cartrons[i].cartroMarcat.length) {
+                for (int k = 0; k < cartrons[i].cartroMarcat[j].length; k++) {
+                    if (cartrons[i].cartroMarcat[j][k] == MARCAT) {
+                        contador++;
+                    }
+                }
+                if (contador == 5) {
+                    contadorLinies++;
+                }
+                contador = 0;
+                j++;
+            }
+            i++;
+        }
+        if (contadorLinies == 3) {
+            bingo = true;
+            //contadorLinies = 0;
+        }
+        return bingo;
     }
 
     /**
