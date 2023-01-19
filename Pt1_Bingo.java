@@ -4,6 +4,7 @@
  */
 package pt1_bingo;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -16,12 +17,13 @@ public class Pt1_Bingo {
     //Declaració i inicialització de constants globals\\
     public static final Scanner SCN = new Scanner(System.in);
     public static final Random RND = new Random();
-    public static final int MAX_TIPUS_JOC = 27;//75; //Minim pot ser 27, que son els espais disponibles sense repetició d'un cartro.
+    public static final int MAX_TIPUS_JOC = 90;//75 o 90; //Minim pot ser 27, que son els espais disponibles sense repetició d'un cartro.
     public static final int MIN_TIPUS_JOC = 1;
     public static final String BOMBO = "@";
     public static final int MARCAT = -1;
     public static final String MARCAT_STRING = "X";
     public static final int MAX_BOMBO = 4;
+    public static final int RESET_ARRAY = 0;
 
     /**
      * @param args the command line arguments
@@ -58,19 +60,35 @@ public class Pt1_Bingo {
             while (!bingo && contadorTirades < MAX_TIPUS_JOC && seguent) {
                 ultimaExtraccio = novaExtracció(registreExtraccions);
                 contadorTirades++;
-                //marcar cartroMarcat si escau
+                System.out.println("contadorTirades = " + contadorTirades);
+                //Comprovar i marcar cartroMarcat si escau
                 comprovarCartrons(cartrons, ultimaExtraccio);
-                seguent = continuar("Següent número (s/n)?: ");
-                //mostrar post extracció \\
+                //seguent = continuar("Següent número (s/n)?: ");
+                //mostrar cartroMarcat post extracció \\
                 for (int i = 0; i < cartrons.length; i++) {
-                    System.out.println("Cartro " + (i + 1));
+                    System.out.println("\nCartro " + (i + 1));
                     mostrarCartro(cartrons[i].cartroMarcat);
                 }
-                //mostrarCartroMarcat(cartrons, BOMBO, MARCAT);
-            }
 
+                //Validar linia i bingo
+                if (!linia) {
+                    //metode
+                    linia = validarLinia(cartrons);
+                    if (linia) {
+                        System.out.println("Linia!!!");
+                        seguent = continuar("Següent número (s/n)?: ");
+                    }
+                }
+            }
+            //mostrar extraccions
+            mostrarExtraccions(registreExtraccions);
+            
+            //Fi de joc o no i resets necessaris\\
             fiJoc = repetirJoc("Vols tornar a jugar?: ");
             seguent = true;
+            linia = false;
+            Arrays.fill(registreExtraccions, 0, registreExtraccions.length - 1, RESET_ARRAY);;
+            contadorTirades = 0;
         } while (!fiJoc);
     }
 
@@ -172,6 +190,27 @@ public class Pt1_Bingo {
         return nouNumero;
     }
 
+    public static void mostrarExtraccions(int[] registreExtraccions) {
+        int contadorPrintSalt, contadorPrintGeneral;
+        contadorPrintGeneral = contadorPrintSalt = 0;
+        System.out.print("|");
+        for (int i = 0; i < registreExtraccions.length; i++) {
+            if (registreExtraccions[i] == 0) {
+                System.out.printf("%2d|", 0); //Numero no extret
+            } else {
+                System.out.printf("%2d|", i + 1); //Numero extret
+            }
+            contadorPrintSalt++;
+            contadorPrintGeneral++;
+            if (contadorPrintSalt == 10 && contadorPrintGeneral < registreExtraccions.length) {
+                System.out.println();
+                System.out.print("|");
+                contadorPrintSalt = 0;
+            }
+        }
+        System.out.println();
+    }
+
     public static void comprovarCartrons(Cartro[] cartrons, int ultimaExtraccio) {
         int[] resultatCerca = new int[2];
         for (int i = 0; i < cartrons.length; i++) {
@@ -185,6 +224,33 @@ public class Pt1_Bingo {
             }
             //trobat = false;
         }
+    }
+
+    public static boolean validarLinia(Cartro[] cartrons) {
+        boolean linia = false;
+        int j, k, contador;
+        int i = 0;
+        while (!linia && i < cartrons.length) {
+            j = k = contador = 0;
+            while (!linia && j < cartrons[i].cartroMarcat.length) {
+                while (!linia && k < cartrons[i].cartroMarcat[j].length) {
+                    if (cartrons[i].cartroMarcat[j][k] == MARCAT) {
+                        contador++;
+                    }
+                    k++;
+                }
+                if (contador == 5) {
+                    linia = true;
+                } else {
+                    contador = 0;
+                    k = 0;
+                }
+                j++;
+            }
+            i++;
+        }
+
+        return linia;
     }
 
     /**
