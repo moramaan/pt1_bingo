@@ -19,17 +19,17 @@ public class Pt1_Bingo {
     public static final Random RND = new Random();
     public static final int MAX_TIPUS_JOC = 90;//75 o 90; //Minim pot ser 27, que son els espais disponibles sense repetició d'un cartro.
     public static final int MIN_TIPUS_JOC = 1;
-    public static final String BOMBO = "\u262B";
     public static final int MARCAT = -1;
-    public static final String MARCAT_STRING = "\u2718";
     public static final int MAX_BOMBO = 4;
     public static final int RESET_ARRAY = 0;
     public static final String RESET = "\u001B[0m";
     public static final String RED = "\u001B[31m";
-    public static final String BLUE = "\u001B[34m";
     public static final String GREEN = "\u001B[32m";
+    public static final String YELLOW = "\u001B[33m";
     public static final String CYAN = "\u001B[36m";
-    public static final String NO_EXTRET = CYAN + "--" + RESET;
+    public static final String BOMBO = CYAN + "\u262B" + RESET;
+    public static final String MARCAT_STRING = GREEN + "\u2718" + RESET;
+    public static final String NO_EXTRET = "--";
 
     /**
      * @param args the command line arguments
@@ -56,7 +56,7 @@ public class Pt1_Bingo {
             Cartro[] cartrons = new Cartro[opcioJugador];
             crearCartrons(cartrons);
             for (int i = 0; i < cartrons.length; i++) {
-                System.out.println(BLUE + "\nCartro " + (i + 1) + RESET);
+                System.out.println(YELLOW + "\nCartro " + (i + 1) + RESET);
                 mostrarCartro(cartrons[i].cartro);
             }
             //Dinàmica d'extraccions\\
@@ -70,7 +70,7 @@ public class Pt1_Bingo {
                 //seguent = continuar("Següent número (s/n)?: ");
 
                 for (int i = 0; i < cartrons.length; i++) {
-                    System.out.println(BLUE + "\nCartro " + (i + 1) + RESET);
+                    System.out.println(YELLOW + "\nCartro " + (i + 1) + RESET);
                     mostrarCartro(cartrons[i].cartroMarcat);
                 }
                 if (!linia) {
@@ -87,11 +87,11 @@ public class Pt1_Bingo {
             mostrarExtraccions(registreExtraccions, cartrons);
 
             //***Fi de joc o no i resets necessaris***\\
-            jugar = continuar("Vols tornar a jugar?: ");
+            jugar = continuar("Vols tornar a jugar (s/n)?: ");
             seguent = true;
             linia = false;
             bingo = false;
-            Arrays.fill(registreExtraccions, 0, registreExtraccions.length, RESET_ARRAY);;
+            Arrays.fill(registreExtraccions, 0, registreExtraccions.length, RESET_ARRAY);
             contadorTirades = 0;
         } while (jugar);
     }
@@ -193,10 +193,10 @@ public class Pt1_Bingo {
             for (int j = 0; j < cartro[i].length; j++) {
                 switch (cartro[i][j]) {
                     case 0:
-                        System.out.printf(CYAN + "%2s" + RESET + "|", BOMBO);
+                        System.out.printf(" %s|", BOMBO);
                         break;
                     case -1:
-                        System.out.printf(GREEN + "%2s" + RESET + "|", MARCAT_STRING);
+                        System.out.printf(" %s|", MARCAT_STRING);
                         break;
                     default:
                         System.out.printf("%2d|", cartro[i][j]);
@@ -226,28 +226,29 @@ public class Pt1_Bingo {
 
     /**
      * Mètode que mostra per pantalla les extraccions realitzades durant la
-     * partida. Mostra en color XXX les coincidencies amb el/s teu/s cartro/ns.
+     * partida.Mostra en color verd les coincidencies amb el/s teu/s cartro/ns.
      *
      * @param registreExtraccions Array on s'emmagatzemen les extraccions.
+     * @param cartrons
      */
     public static void mostrarExtraccions(int[] registreExtraccions, Cartro[] cartrons) {
         int contadorPrintSalt, contadorPrintGeneral;
         contadorPrintGeneral = contadorPrintSalt = 0;
         boolean trobat;
-        System.out.println(BLUE + "=========="
+        System.out.println(CYAN + "=========="
                 + "Extraccions"
                 + "==========" + RESET);
-        System.out.print(BLUE + "|" + RESET);
+        System.out.print(CYAN + "|" + RESET);
         for (int i = 0; i < registreExtraccions.length; i++) {
 
             if (registreExtraccions[i] == 0) {
-                System.out.printf("%2s" + BLUE + "|" + RESET, NO_EXTRET); //Numero no extret
+                System.out.printf("%2s" + CYAN + "|" + RESET, NO_EXTRET); //Numero no extret
             } else {
                 trobat = cercarExtraccio(i + 1, cartrons); //falta hacer algo con esto
                 if (trobat) {
-                    System.out.printf(RED + "%2d" + BLUE + "|" + RESET, i + 1); //Numero extret
+                    System.out.printf(GREEN + "%2d" + CYAN + "|" + RESET, i + 1); //Numero extret
                 } else {
-                    System.out.printf("%2d" + BLUE + "|" + RESET, i + 1); //Numero extret
+                    System.out.printf("%2d" + CYAN + "|" + RESET, i + 1); //Numero extret
                 }
 
             }
@@ -255,12 +256,12 @@ public class Pt1_Bingo {
             contadorPrintGeneral++;
             if (contadorPrintSalt == 10 && contadorPrintGeneral < registreExtraccions.length) {
                 System.out.println();
-                System.out.print(BLUE + "|" + RESET);
+                System.out.print(CYAN + "|" + RESET);
                 contadorPrintSalt = 0;
             }
         }
         //System.out.println();
-        System.out.println("\n" + BLUE + "===============================" + RESET + "\n");
+        System.out.println("\n" + CYAN + "===============================" + RESET + "\n");
         //System.out.println();
     }
 
@@ -294,7 +295,7 @@ public class Pt1_Bingo {
             trobat = (resultatCerca[0] != -1 && resultatCerca[1] != -1);
 
             if (trobat) {
-                System.out.printf("Aquest número el tenies al Cartro-%d, el marco com -1\n", i + 1);
+                System.out.printf("Aquest número el tenies al Cartro-%d, el marco com %s\n", i + 1, MARCAT_STRING);
                 cartrons[i].cartroMarcat[resultatCerca[0]][resultatCerca[1]] = -1;
             }
         }
@@ -323,7 +324,7 @@ public class Pt1_Bingo {
                 }
                 if (contador == 5) {
                     linia = true;
-                    System.out.printf(GREEN + "Linia!!" + RESET + " Cartro:%d row:%d\n", i + 1, j + 1);
+                    System.out.printf(GREEN + "Linia!!" + RESET + " Cartro:%d fila:%d\n", i + 1, j + 1);
                 } else {
                     contador = 0;
                     k = 0;
