@@ -82,9 +82,9 @@ public class Pt1_Bingo {
                 //Validar Bingo
                 if (!bingo) { //contadorTirades > 14 && 
                     bingo = validarBingo(cartrons);
-                    if (bingo) {
+                    /*if (bingo) {
                         System.out.println("Bingo!!");
-                    }
+                    }*/
                 }
             }
             //mostrar extraccions
@@ -269,11 +269,15 @@ public class Pt1_Bingo {
                 contador = 0;
                 j++;
             }
-            i++;
-        }
-        if (contadorLinies == 3) {
-            bingo = true;
-            //contadorLinies = 0;
+            if (contadorLinies == 3) {
+                bingo = true;
+                //contadorLinies = 0;
+                System.out.printf("Bingo!\n"
+                        + "Has guanyat amb el Cartró: %d\n\n", i + 1);
+            } else {
+                contadorLinies = 0;
+                i++;
+            }
         }
         return bingo;
     }
