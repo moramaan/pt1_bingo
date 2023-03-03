@@ -1,6 +1,7 @@
 # ¡BINGO GAME!
 
 __This is a final unit project of Programming Module. 1st course of CFGS DAW.__
+
 *It was developed with Java SDK 11 and Ant library.*
 
 1. Everyone used to know Bingo Game. For those who don't, it is a gambling game that consists of a hype with a quantity certain numbered balls inside. This is a very popular game all over the world of which there are two typical varieties, which are 90 ball bingo and 75 ball bingo.
